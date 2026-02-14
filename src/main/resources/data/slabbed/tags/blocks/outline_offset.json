@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:torch",
+    "minecraft:soul_torch",
+    "minecraft:redstone_torch",
+    "minecraft:wall_torch",
+    "minecraft:soul_wall_torch",
+    "minecraft:redstone_wall_torch",
+    "minecraft:chain",
+    "minecraft:lantern",
+    "minecraft:soul_lantern",
+    "minecraft:hanging_roots",
+    "minecraft:spore_blossom",
+    "minecraft:pointed_dripstone",
+    "minecraft:cave_vines",
+    "minecraft:cave_vines_plant"
+  ]
+}
