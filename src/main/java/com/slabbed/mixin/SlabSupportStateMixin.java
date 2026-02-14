@@ -70,9 +70,6 @@ public abstract class SlabSupportStateMixin {
             return;
         }
         BlockState self = (BlockState) (Object) this;
-        if (!SlabSupport.shouldOffsetOutline(self)) {
-            return;
-        }
         double yOff = SlabSupport.getYOffset(world, pos, self);
         if (yOff != 0.0) {
             cir.setReturnValue(cir.getReturnValue().offset(0.0, yOff, 0.0));

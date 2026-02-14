@@ -27,17 +27,13 @@ import net.minecraft.block.WallHangingSignBlock;
 import net.minecraft.block.WallSignBlock;
 import net.minecraft.block.WallTorchBlock;
 import net.minecraft.block.enums.BedPart;
-import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.SlabType;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.WorldView;
 
 /**
@@ -46,13 +42,6 @@ import net.minecraft.world.WorldView;
 public final class SlabSupport {
     private SlabSupport() {
     }
-
-    private static final Identifier OUTLINE_OFFSET_ID = Identifier.of("slabbed", "outline_offset");
-
-    private static final TagKey<Block> OUTLINE_OFFSET_TAG = TagKey.of(
-            RegistryKeys.BLOCK,
-            OUTLINE_OFFSET_ID
-    );
 
     /**
      * Returns true if the block is a thin top-layer block (snow layers, carpet,
@@ -212,20 +201,6 @@ public final class SlabSupport {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Conservative gate for outline offsetting: only allowlisted, non-full, non-partial blocks.
-     */
-    public static boolean shouldOffsetOutline(BlockState state) {
-        Block block = state.getBlock();
-        if (block instanceof SlabBlock || block instanceof StairsBlock) {
-            return false;
-        }
-        if (state.isFullCube(EmptyBlockView.INSTANCE, BlockPos.ORIGIN)) {
-            return false;
-        }
-        return state.isIn(OUTLINE_OFFSET_TAG);
     }
 
     /**
