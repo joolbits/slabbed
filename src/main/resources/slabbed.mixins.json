@@ -7,7 +7,15 @@
     "SlabSupportBlockMixin",
     "SlabSupportStateMixin",
     "TorchParticleMixin",
-    "RedstoneWireBlockMixin"
+    "RedstoneWireBlockMixin",
+    "debug.CeilingHangingSignDebugMixin",
+    "debug.ChainBlockDebugMixin",
+    "debug.LanternBlockDebugMixin",
+    "debug.BlockStateSupportLogMixin",
+    "debug.BlockStateSideSolidDebugMixin",
+    "debug.BlockStateSideSolidFullSquareDebugMixin",
+    "debug.BlockItemPlacementDebugMixin",
+    "debug.accessor.ItemPlacementContextInvoker"
   ],
   "client": [],
   "injectors": { "defaultRequire": 1 }

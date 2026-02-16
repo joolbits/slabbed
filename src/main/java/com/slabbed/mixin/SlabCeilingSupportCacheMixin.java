@@ -2,6 +2,8 @@ package com.slabbed.mixin;
 
 import com.slabbed.util.SlabSupport;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.block.enums.SlabType;
 import net.minecraft.block.SideShapeType;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(targets = "net.minecraft.block.AbstractBlock$AbstractBlockState$ShapeCache")
 public class SlabCeilingSupportCacheMixin {
 
+    private static boolean slabbed$debugLogged = false;
+
     @Shadow
     private boolean[] solidSides;
 
@@ -34,7 +38,21 @@ public class SlabCeilingSupportCacheMixin {
             // → index = 0 * 3 + 1 = 1
             int index = Direction.DOWN.ordinal() * SideShapeType.values().length
                         + SideShapeType.CENTER.ordinal();
+            boolean before = this.solidSides[index];
             this.solidSides[index] = true;
+
+            if (!slabbed$debugLogged) {
+                slabbed$debugLogged = true;
+                SlabType type = state.contains(SlabBlock.TYPE) ? state.get(SlabBlock.TYPE) : null;
+                System.out.println("[SLABBED][ShapeCache ctor] block=" + state.getBlock()
+                        + " slabType=" + type
+                        + " solidSides.length=" + (solidSides == null ? -1 : solidSides.length)
+                        + " dirDownOrd=" + Direction.DOWN.ordinal()
+                        + " centerOrd=" + SideShapeType.CENTER.ordinal()
+                        + " index=" + index
+                        + " before=" + before
+                        + " after=" + this.solidSides[index]);
+            }
         }
     }
 }

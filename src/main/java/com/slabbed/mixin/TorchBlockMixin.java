@@ -6,8 +6,8 @@ import net.minecraft.block.AbstractTorchBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
@@ -37,7 +37,8 @@ public abstract class TorchBlockMixin extends Block {
 
     @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"), cancellable = true)
     private void slabbed$stayOnSlabs(BlockState state, WorldView world, ScheduledTickView scheduledTickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random, CallbackInfoReturnable<BlockState> cir) {
-        if (SlabSupport.canTreatAsSolidTopFace(world, pos.down())) {
+        // Only guard the support-bearing face (DOWN). Other neighbor updates should fall through.
+        if (direction == Direction.DOWN && SlabSupport.canTreatAsSolidTopFace(world, pos.down())) {
             cir.setReturnValue(state);
             return;
         }
