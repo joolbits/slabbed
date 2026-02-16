@@ -1,6 +1,7 @@
 package com.slabbed.util;
 
 import com.slabbed.compat.CompatHooks;
+import com.slabbed.Slabbed;
 import net.minecraft.block.BellBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -27,10 +28,14 @@ import net.minecraft.block.WallHangingSignBlock;
 import net.minecraft.block.WallSignBlock;
 import net.minecraft.block.WallTorchBlock;
 import net.minecraft.block.enums.BedPart;
-import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.block.enums.BlockHalf;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.block.enums.SlabType;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -42,6 +47,13 @@ import net.minecraft.world.WorldView;
 public final class SlabSupport {
     private SlabSupport() {
     }
+
+    static {
+        System.out.println("SLABBED TEST BUILD ACTIVE");
+    }
+
+    public static final Identifier OUTLINE_OFFSET_ID = Identifier.of("slabbed", "outline_offset");
+    public static final TagKey<Block> OUTLINE_OFFSET_TAG = TagKey.of(RegistryKeys.BLOCK, OUTLINE_OFFSET_ID);
 
     /**
      * Returns true if the block is a thin top-layer block (snow layers, carpet,
@@ -160,6 +172,12 @@ public final class SlabSupport {
     /** Recursion guard: prevents StackOverflow when isSolidBlock triggers getOutlineShape → getYOffset. */
     private static final ThreadLocal<Boolean> IN_GET_Y_OFFSET = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
+    /** Recursion guard for outline predicate. */
+    private static final ThreadLocal<Boolean> IN_OUTLINE_PREDICATE = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /** Debug toggle for outline offsets. */
+    private static final boolean DEBUG_OUTLINE_OFFSET = false;
+
     /**
      * Returns true if the block state represents a ceiling-attached block —
      * one that hangs from the block above it by nature.
@@ -201,6 +219,56 @@ public final class SlabSupport {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Conservative gate for outline offsets. Only allow when:
+     *  - world/pos non-null
+     *  - state is in OUTLINE_OFFSET_TAG
+     *  - state is not a slab
+     *  - state is not a full cube at the queried position
+     *  - there is a bottom slab directly below pos
+     */
+    public static boolean shouldOffsetOutline(BlockView world, BlockPos pos, BlockState state) {
+        if (world == null || pos == null) {
+            return false;
+        }
+        if (IN_OUTLINE_PREDICATE.get()) {
+            return false;
+        }
+        IN_OUTLINE_PREDICATE.set(Boolean.TRUE);
+        try {
+            // Tag check with bootstrap guard
+            boolean inTag;
+            try {
+                inTag = state.isIn(OUTLINE_OFFSET_TAG);
+            } catch (IllegalStateException e) {
+                return false;
+            }
+            if (!inTag) {
+                return false;
+            }
+
+            if (state.isIn(BlockTags.SLABS)) {
+                return false;
+            }
+
+            if (state.isFullCube(world, pos)) {
+                return false;
+            }
+
+            if (!hasBottomSlabBelow(world, pos)) {
+                return false;
+            }
+
+            if (DEBUG_OUTLINE_OFFSET) {
+                Slabbed.LOGGER.info("[Slabbed] outline offset allow {} at {}", state.getBlock().toString(), pos);
+            }
+
+            return true;
+        } finally {
+            IN_OUTLINE_PREDICATE.set(Boolean.FALSE);
+        }
     }
 
     /**
