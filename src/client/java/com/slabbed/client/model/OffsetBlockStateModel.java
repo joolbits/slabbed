@@ -1,7 +1,7 @@
 package com.slabbed.client.model;
 
 import com.slabbed.Slabbed;
-import com.slabbed.util.SlabSupport;
+import com.slabbed.client.ClientDy;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBlockStateModel;
 import net.minecraft.block.BlockState;
@@ -53,12 +53,12 @@ public final class OffsetBlockStateModel implements BlockStateModel, FabricBlock
     @Override
     public void emitQuads(QuadEmitter emitter, BlockRenderView view, BlockPos pos, BlockState state, Random random,
                           Predicate<Direction> cullTest) {
-        float dy = (float) SlabSupport.getYOffset(view, pos, state);
+        float dy = ClientDy.dyFor(view, pos, state);
         if (state.getBlock() instanceof TorchBlock || state.getBlock() instanceof WallTorchBlock) {
             Slabbed.LOGGER.info("[Slabbed] emitQuads TORCH dy={} pos={} below={}", dy, pos, view.getBlockState(pos.down()).getBlock());
         }
         if (state.isOf(net.minecraft.block.Blocks.CRAFTING_TABLE)) {
-            Slabbed.LOGGER.info("[Slabbed] emitQuads crafting_table dy={}", dy);
+            Slabbed.LOGGER.info("[Slabbed] emitQuads crafting_table dy={} pos={} below={}", dy, pos, view.getBlockState(pos.down()).getBlock());
         }
         QuadEmitter out = dy != 0.0f ? YOffsetEmitter.wrap(emitter, dy) : emitter;
         fabricWrapped.emitQuads(out, view, pos, state, random, cullTest);
