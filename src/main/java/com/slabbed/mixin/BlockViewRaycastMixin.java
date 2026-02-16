@@ -1,7 +1,6 @@
 package com.slabbed.mixin;
 
 import com.slabbed.client.ClientDy;
-import com.slabbed.util.RaycastOffsetContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -19,23 +18,19 @@ public interface BlockViewRaycastMixin {
     @Inject(method = "raycastBlock", at = @At("HEAD"), cancellable = true)
     private void slabbed$raycastBlockAdjusted(Vec3d start, Vec3d end, BlockPos pos, VoxelShape shape, BlockState state,
                                               CallbackInfoReturnable<BlockHitResult> cir) {
-        if (!RaycastOffsetContext.isInRaycast()) {
-            return;
-        }
+        BlockPos originalPos = pos.toImmutable();
         BlockView world = (BlockView) (Object) this;
-        if (ClientDy.dyFor(world, pos, state) != -0.5f) {
+        float dy = ClientDy.dyFor(world, originalPos, state);
+        if (dy != -0.5f) {
             return;
         }
-        BlockPos adjustedPos = pos.down();
-        VoxelShape adjustedShape = shape.offset(0.0D, 0.5D, 0.0D);
-        BlockHitResult hit = adjustedShape.raycast(start, end, adjustedPos);
-        if (hit != null) {
-            VoxelShape rayShape = state.getRaycastShape(world, pos).offset(0.0D, 0.5D, 0.0D);
-            BlockHitResult hit2 = rayShape.raycast(start, end, adjustedPos);
-            if (hit2 != null && hit2.getPos().subtract(start).lengthSquared() < hit.getPos().subtract(start).lengthSquared()) {
-                hit = hit.withSide(hit2.getSide());
-            }
+        BlockPos adjustedPos = originalPos.down();
+        VoxelShape rayShape = state.getRaycastShape(world, originalPos).offset(0.0D, 0.5D, 0.0D);
+        BlockHitResult hit = rayShape.raycast(start, end, adjustedPos);
+        if (hit == null) {
+            return;
         }
+        hit = new BlockHitResult(hit.getPos(), hit.getSide(), originalPos, hit.isInsideBlock());
         cir.setReturnValue(hit);
     }
 }

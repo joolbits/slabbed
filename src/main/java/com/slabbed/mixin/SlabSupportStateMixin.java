@@ -75,4 +75,28 @@ public abstract class SlabSupportStateMixin {
             cir.setReturnValue(cir.getReturnValue().offset(0.0, yOff, 0.0));
         }
     }
+
+    @Inject(
+            method = "getRaycastShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/shape/VoxelShape;",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void slabbed$offsetRaycastShape(BlockView world, BlockPos pos,
+                                            CallbackInfoReturnable<VoxelShape> cir) {
+        if (pos == null || world == null) {
+            return;
+        }
+        BlockState self = (BlockState) (Object) this;
+        double yOff = SlabSupport.getYOffset(world, pos, self);
+        if (yOff == 0.0) {
+            return;
+        }
+
+        VoxelShape shape = cir.getReturnValue();
+        if (shape == null || shape.isEmpty()) {
+            return;
+        }
+
+        cir.setReturnValue(shape.offset(0.0D, yOff, 0.0D));
+    }
 }
