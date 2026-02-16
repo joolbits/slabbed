@@ -23,6 +23,22 @@ public abstract class WorldRendererMixin {
     @Unique
     private static long SLABBED$LAST_OUTLINE_LOG = 0L;
 
+    @Unique
+    private static String slabbed$shapeSummary(ClientWorld w, BlockPos p) {
+        var st = w.getBlockState(p);
+        VoxelShape outline = st.getOutlineShape(w, p);
+        VoxelShape collision = st.getCollisionShape(w, p);
+        VoxelShape ray = st.getRaycastShape(w, p);
+        return "pos=" + p +
+                " state=" + st.getBlock().getTranslationKey() +
+                " outlineEmpty=" + outline.isEmpty() +
+                " collisionEmpty=" + collision.isEmpty() +
+                " rayEmpty=" + ray.isEmpty() +
+                " outlineBoxes=" + outline.getBoundingBoxes().size() +
+                " collisionBoxes=" + collision.getBoundingBoxes().size() +
+                " rayBoxes=" + ray.getBoundingBoxes().size();
+    }
+
     @Redirect(
             method = "drawBlockOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;DDDLnet/minecraft/client/render/state/OutlineRenderState;IF)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/state/OutlineRenderState;shape()Lnet/minecraft/util/shape/VoxelShape;")
@@ -39,6 +55,22 @@ public abstract class WorldRendererMixin {
             return shape;
         }
         BlockPos pos = blockHit.getBlockPos();
+        long now = System.currentTimeMillis();
+        if (now - SLABBED$LAST_OUTLINE_LOG > 750L) {
+            SLABBED$LAST_OUTLINE_LOG = now;
+
+            String b0 = slabbed$shapeSummary(clientWorld, pos);
+            String bU = slabbed$shapeSummary(clientWorld, pos.up());
+            String bD = slabbed$shapeSummary(clientWorld, pos.down());
+
+            double dy0 = ClientDy.dyFor(clientWorld, pos, clientWorld.getBlockState(pos));
+            double dyU = ClientDy.dyFor(clientWorld, pos.up(), clientWorld.getBlockState(pos.up()));
+
+            com.slabbed.Slabbed.LOGGER.info(
+                    "[Slabbed][SHAPES] dy(pos)={} dy(pos.up)={} | {} | UP {} | DOWN {}",
+                    dy0, dyU, b0, bU, bD
+            );
+        }
         double dy = ClientDy.dyFor(clientWorld, pos, clientWorld.getBlockState(pos));
         return dy != 0.0D ? shape.offset(0.0D, dy, 0.0D) : shape;
     }

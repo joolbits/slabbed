@@ -8,7 +8,8 @@
     "SlabSupportBlockMixin",
     "SlabSupportStateMixin",
     "TorchParticleMixin",
-    "RedstoneWireBlockMixin"
+    "RedstoneWireBlockMixin",
+    "RaycastShapeDebugMixin"
   ],
   "client": [],
   "injectors": { "defaultRequire": 1 }

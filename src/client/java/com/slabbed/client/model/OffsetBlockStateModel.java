@@ -1,12 +1,11 @@
 package com.slabbed.client.model;
 
 import com.slabbed.Slabbed;
-import com.slabbed.util.SlabSupport;
+import com.slabbed.client.ClientDy;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBlockStateModel;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.CarpetBlock;
 import net.minecraft.block.TorchBlock;
 import net.minecraft.block.WallTorchBlock;
 import net.minecraft.client.render.model.BlockModelPart;
@@ -55,10 +54,7 @@ public final class OffsetBlockStateModel implements BlockStateModel, FabricBlock
     @Override
     public void emitQuads(QuadEmitter emitter, BlockRenderView view, BlockPos pos, BlockState state, Random random,
                           Predicate<Direction> cullTest) {
-        float dy = (float) SlabSupport.getYOffset(view, pos, state);
-        if (dy == 0.0f && state.getBlock() instanceof CarpetBlock && SlabSupport.hasBottomSlabBelow(view, pos)) {
-            dy = -0.5f;
-        }
+        float dy = ClientDy.dyFor(view, pos, state);
         if (state.getBlock() instanceof TorchBlock || state.getBlock() instanceof WallTorchBlock) {
             Slabbed.LOGGER.info("[Slabbed] emitQuads TORCH dy={} pos={} below={}", dy, pos, view.getBlockState(pos.down()).getBlock());
         }
