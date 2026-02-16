@@ -171,6 +171,9 @@ public final class SlabSupport {
     /** Recursion guard: prevents StackOverflow when isSolidBlock triggers getOutlineShape → getYOffset. */
     private static final ThreadLocal<Boolean> IN_GET_Y_OFFSET = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
+    /** Recursion guard for outline predicate to avoid shape reentry during bootstrap. */
+    private static final ThreadLocal<Boolean> IN_OUTLINE_PREDICATE = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
     /**
      * Returns true if the block state represents a ceiling-attached block —
      * one that hangs from the block above it by nature.
@@ -218,14 +221,24 @@ public final class SlabSupport {
      * Conservative gate for outline offsetting: only allowlisted, non-full, non-partial blocks.
      */
     public static boolean shouldOffsetOutline(BlockState state) {
-        Block block = state.getBlock();
-        if (block instanceof SlabBlock || block instanceof StairsBlock) {
+        if (IN_OUTLINE_PREDICATE.get()) {
             return false;
         }
-        if (state.isFullCube(EmptyBlockView.INSTANCE, BlockPos.ORIGIN)) {
-            return false;
+        IN_OUTLINE_PREDICATE.set(Boolean.TRUE);
+        try {
+            Block block = state.getBlock();
+            if (block instanceof SlabBlock || block instanceof StairsBlock) {
+                return false;
+            }
+            try {
+                return state.isIn(OUTLINE_OFFSET_TAG);
+            } catch (IllegalStateException e) {
+                // Tags not yet bound during early bootstrap (e.g., Blocks static init)
+                return false;
+            }
+        } finally {
+            IN_OUTLINE_PREDICATE.set(Boolean.FALSE);
         }
-        return state.isIn(OUTLINE_OFFSET_TAG);
     }
 
     /**
