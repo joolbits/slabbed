@@ -1,5 +1,7 @@
 package com.slabbed.mixin;
 
+import com.slabbed.client.ClientDy;
+import com.slabbed.util.RaycastOffsetContext;
 import com.slabbed.util.SlabSupport;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -69,8 +71,11 @@ public abstract class SlabSupportStateMixin {
         if (pos == null || world == null) {
             return;
         }
+        if (!RaycastOffsetContext.isInRaycast()) {
+            return;
+        }
         BlockState self = (BlockState) (Object) this;
-        double yOff = SlabSupport.getYOffset(world, pos, self);
+        double yOff = ClientDy.dyFor(world, pos, self);
         if (yOff != 0.0) {
             cir.setReturnValue(cir.getReturnValue().offset(0.0, yOff, 0.0));
         }
