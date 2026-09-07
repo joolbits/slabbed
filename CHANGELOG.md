@@ -1,3 +1,19 @@
+## [0.5.2-alpha.10+26.2] — MC 26.2 alpha hotfix
+
+See LAW.md — this changelog does not redefine the law.
+
+Version note: alpha.8 and alpha.9 are held by the Fabric 1.21.1 line (shared alpha series), so this
+hotfix takes the next free number.
+
+### Fixes
+
+- **Scaffolding on a lowered column is stood on at its real height.** Scaffolding has no solid body;
+  its only collision is a thin standing layer that Minecraft switches on when your feet are above
+  the top of the block. That check compared your feet with the unlowered block, so on scaffolding
+  placed on a slab the layer never appeared: you climbed to the top, then sank and slid back down
+  as soon as you released jump. The check now uses the lowered height, so you stand where the
+  scaffolding is drawn. Scaffolding on plain ground is unchanged.
+
 ## [0.5.2-alpha.7+26.2] — MC 26.2 alpha hotfix
 
 See LAW.md — this changelog does not redefine the law.
